@@ -26,7 +26,9 @@ jobs:
       with:
         python-version: '3.11'
     - name: Install all necessary packages
-      run: pip install jupyter lxml pandas requests beautifulsoup4 html5lib asyncio nest_asyncio playwright pandas tqdm
+      run: pip install jupyter lxml pandas requests beautifulsoup4 html5lib asyncio nest_asyncio playwright pandas tqdm\
+    - name: Install Playwright Browsers
+      run: npx playwright install
     - name: Scraping today's data
       run: jupyter nbconvert --to notebook --execute "chicago_reimbursements_scraper.ipynb" --stdout
     - name: Commit and push any changes
