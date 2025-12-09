@@ -1,4 +1,4 @@
-voucher_number,amount,payment_date,vendor_name,description,department
+VOUCHER NUMBER,AMOUNT,PAYMENT DATE,VENDOR NAME,DESCRIPTION,DEPARTMENT
 PV23252302100,309.99,04/08/2025,"HEINEMANN, ZHENESSE",Employee Reimbursement for Conference attendance fee,DEPARTMENT OF CULTURAL AFFAIRS AND SPECIAL EVENTS
 PV23242302000,200.0,03/25/2025,CHRISTINE JACOB,Reimbursement - Finance/Air and Water Show centerpieces for Hospitality Tent,DEPARTMENT OF CULTURAL AFFAIRS AND SPECIAL EVENTS
 PV23242302051,167.2,03/17/2025,"HEITZ, NEAL A",Programming/Gospel Music Fest shipping employee reimbursement,DEPARTMENT OF CULTURAL AFFAIRS AND SPECIAL EVENTS
