@@ -75,7 +75,7 @@ df_dept_sum.to_csv("docs/by_department_summary.csv", index=False
 <br>
 
 ## What I Would Add Next Time
-I learned a lot through this project and am happy that I challenged myself (the assignment only required us to make one visualization on one page). While the website does achieve the goals I set for myself, it also gives me ideas about more functionality that could be included.
+I learned a lot through this project and am happy that I challenged myself to create multiple pages and display the data in this way (the assignment only required us to make one visualization on one page). While the website does achieve the goals I set for myself, it also gives me ideas about more functionality that could be included.
 
 In future projects, I would like to add more ways for a user to interact with the data. Some ideas I have for increased functionality include:
 
