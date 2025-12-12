@@ -38,7 +38,7 @@ For this project, I put to work a lot of what I learned in my Foundations of Com
 
 ```python
 df_orig = pd.read_csv("employee_reimbursements.csv")
-df_safe - pd.concat([df_orig, df_new], ignore_index = True)
+df_safe = pd.concat([df_orig, df_new], ignore_index = True)
 df_safe = df_safe.drop_duplicates(subset=['voucher_name', 'amount', 'payment_date', 'description'], keep='first')
 df_safe.to_csv("employee_reimbursements.csv", index=False)
 ```
@@ -79,7 +79,7 @@ I learned a lot through this project and am happy that I challenged myself (the 
 
 In future projects, I would like to add more ways for a user to interact with the data. Some ideas I have for increased functionality include:
 
-- <ins>A more powerful search tool</ins> to allow for the use of advanced search parameters
+- **A more powerful search tool** to allow for the use of advanced search parameters
 - <ins>Filtering options</ins> like the ability to specify date or total amount ranges
 - <ins>More/varied visualizations</ins>, for instance showing change over time line charts to demonstrate how employee reimbursement spending has fluctuated historically.
 - <ins>Categorizing/further analyzing spending</ins> using natural language processing in the data wrangling (specifically of the “description” column in the data set). This could lead to interesting insights and allow for more complex visualizations like spending by category.
