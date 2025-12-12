@@ -2,7 +2,7 @@
 
 An auto-updating, scraper-driven web resource
 
-Created by **[Holden Green](https://www.holdengreen.me)** in December 2025 <br>
+Created by **<a href="https://www.holdengreen.me" target=_blank>Holden Green</a>** in December 2025 <br>
 Columbia Journalism School, Foundations of Computing (Final Project)
 
 <br>
