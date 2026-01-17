@@ -20,7 +20,7 @@ I increased readability in my visualizations through the use of color-coded vari
 
 The data shared in the public dataset changes year to year (e.g. on Jan. 1, 2026, all of the 2024 transactions will be removed). I circumvented this limitation by creating my own csv backup which is only added to, not written over entirely, when new scraped data is found.
 
-I also filed a FOIA request with the Chicago Department of Finance (the department that manages this dataset) for employee reimbursement data through 2011. Once I receive the historical data, I will be able to add it to my csv and display (and analyze) for trends on a much longer time scale than before.
+I am also in the process of filing FOIA requests with the Chicago Department of Finance (the department that manages this dataset) for employee reimbursement data through 2011. Once I receive the historical data, I will add it to my site, which will allow analysis of trends on a much longer time scale than before.
 
 <br>
 
