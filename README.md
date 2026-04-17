@@ -7,6 +7,52 @@ Columbia Journalism School, Foundations of Computing (Final Project)
 
 <br>
 
+## Contents
+1. [Updates/Bug Fixes](#updatesbug-fixes)
+2. [The Project](#the-project)
+3. [Data Collection and Wrangling](#data-collection-and-wrangling)
+4. [What I Learned](#what-i-learned)
+5. [What I Would Add Next Time](#what-i-would-add-next-time)
+
+<br>
+
+## Updates/Bug Fixes
+
+### 04/2026: 
+I fixed the two below issues with the [scraping pipeline](/chicago_reimbursements_scraper.ipynb).
+
+**Dates not displaying chronologically due to being different formats** <br>
+Some of the dates in the dataset were in the format "MM/DD/YYYY" while others were in the format "Month DD, YYYY" *(eg. either 01/01/2026 or January 1, 2026)*. Because of this, DataWrapper would not display all the rows on the individual departments' pages chronologically; it would instead sort the MM/DD/YYYY chronologically first, then the Month DD, YYYY chronologically after them.
+
+I solved this by passing the newly merged dataframe's date column through a `pd.to_datetime` argument with the argument `format='mixed'`. This seemed to solve the issue and built in the solution in case the way dates are included in the records changes in the future.
+
+```python
+df_safe = pd.concat([df_orig, df_new], ignore_index=True)
+df_safe['payment_date'] = pd.to_datetime(df_safe['payment_date'], format='mixed')
+```
+
+**`Amount` column not being read as the same by `.drop_duplicates` when merging old and new datasets** <br>
+When a row that was in my original saved dataset and the new dataset (eg. if a reimbursement was uploaded 1 wk ago and I had already scraped, but it was also still in the online database) it would sometimes not disappear when the `.drop_duplicates` line ran.
+
+After some testing, I determined that the `Amount` column was the issue – instead of being a float type it was a string, and the duplicate search was reading them as different.
+
+I solved this by converting the new and old datasets to floats (including removing "$" and "," symbols). I have the conversion for the old dataset nested inside an if/else statement which only runs if the column is a type string (once I save the dataframe once with the characters as type float, it seems like Pandas is good about reading in the data as a float type again).
+
+```python
+df_new['amount'] = df_new['amount'].str.replace('$','')
+df_new['amount'] = df_new['amount'].str.replace(',','')
+df_new['amount'] = df_new['amount'].astype('float')
+```
+```python
+if df_orig['amount'].dtype == 'str':
+    df_orig['amount'] = df_orig['amount'].str.replace('$','')
+    df_orig['amount'] = df_orig['amount'].str.replace(',','')
+    df_orig['amount'] = df_orig['amount'].astype('float')
+```
+
+
+<br>
+
 ## The Project
 Reimbursements paid to employees of the City of Chicago are made public in [this dataset](https://data.cityofchicago.org/Administration-Finance/Employee-Reimbursements/g5h3-jkgt/explore/query/SELECT%0A%20%20%60voucher_number%60%2C%0A%20%20%60amount%60%2C%0A%20%20%60payment_date%60%2C%0A%20%20%60vendor_name%60%2C%0A%20%20%60description%60%2C%0A%20%20%60department%60%0AORDER%20BY%20%60payment_date%60%20DESC%20NULL%20FIRST/page/filter). The data is updated weekly, and old transactions are stored up to Jan. 1 of the previous calendar year. But the interface is a little bit finicky (especially if you’re not a data journalist) and it can be a little bit slow to run queries and get results.
 
