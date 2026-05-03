@@ -4,3 +4,5 @@ Analysis of which agencies have no listed invoice description
 
 Why are some Voucher (Batch) Numbers the same across invoices with different amounts and descriptions?
 Like `PV50105050680`
+
+Have to make name formats match (some are "LASTNAME, FIRSTNAME MI" and some are "FIRSTNAME MI LASTNAME")
