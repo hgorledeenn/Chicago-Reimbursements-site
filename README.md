@@ -8,47 +8,11 @@ Columbia Journalism School, Foundations of Computing (Final Project)
 <br>
 
 ## Contents
-1. [Updates/Bug Fixes](#updatesbug-fixes)
-2. [The Project](#the-project)
-3. [Data Collection and Wrangling](#data-collection-and-wrangling)
-4. [What I Learned](#what-i-learned)
-5. [What I Would Add Next Time](#what-i-would-add-next-time)
-
-<br>
-
-## Updates/Bug Fixes
-
-### 04/2026: 
-I fixed the two below issues with the [scraping pipeline](/chicago_reimbursements_scraper.ipynb).
-
-**Dates not displaying chronologically due to being different formats** <br>
-Some of the dates in the dataset were in the format "MM/DD/YYYY" while others were in the format "Month DD, YYYY" *(eg. either 01/01/2026 or January 1, 2026)*. Because of this, DataWrapper would not display all the rows on the individual departments' pages chronologically; it would instead sort the MM/DD/YYYY chronologically first, then the Month DD, YYYY chronologically after them.
-
-I solved this by passing the newly merged dataframe's date column through a `pd.to_datetime` argument with the argument `format='mixed'`. This seemed to solve the issue and built in the solution in case the way dates are included in the records changes in the future.
-
-```python
-df_safe = pd.concat([df_orig, df_new], ignore_index=True)
-df_safe['payment_date'] = pd.to_datetime(df_safe['payment_date'], format='mixed')
-```
-
-**`Amount` column not being read as the same by `.drop_duplicates` when merging old and new datasets** <br>
-When a row that was in my original saved dataset and the new dataset (eg. if a reimbursement was uploaded 1 wk ago and I had already scraped, but it was also still in the online database) it would sometimes not disappear when the `.drop_duplicates` line ran.
-
-After some testing, I determined that the `Amount` column was the issue – instead of being a float type it was a string, and the duplicate search was reading them as different.
-
-I solved this by converting the new and old datasets to floats (including removing "$" and "," symbols). I have the conversion for the old dataset nested inside an if/else statement which only runs if the column is a type string (once I save the dataframe once with the characters as type float, it seems like Pandas is good about reading in the data as a float type again).
-
-```python
-df_new['amount'] = df_new['amount'].str.replace('$','')
-df_new['amount'] = df_new['amount'].str.replace(',','')
-df_new['amount'] = df_new['amount'].astype('float')
-```
-```python
-if df_orig['amount'].dtype == 'str':
-    df_orig['amount'] = df_orig['amount'].str.replace('$','')
-    df_orig['amount'] = df_orig['amount'].str.replace(',','')
-    df_orig['amount'] = df_orig['amount'].astype('float')
-```
+1. [The Project](#the-project)
+2. [Data Collection and Wrangling](#data-collection-and-wrangling)
+3. [What I Learned](#what-i-learned)
+4. [What I Would Add Next Time](#what-i-would-add-next-time)
+5. [Updates/Bug Fixes](#updatesbug-fixes)
 
 
 <br>
@@ -121,6 +85,9 @@ df_dept_sum.to_csv("docs/by_department_summary.csv", index=False
 <br>
 
 ## What I Would Add Next Time
+
+***This section was written at the time of the original project submission in the winter of 2025. I have since made many improvements to the site, which you can read more about [below](#updatesbug-fixes).***
+
 I learned a lot through this project and am happy that I challenged myself to create multiple pages and display the data in this way (the assignment only required us to make one visualization on one page). While the website does achieve the goals I set for myself, it also gives me ideas about more functionality that could be included.
 
 In future projects, I would like to add more ways for a user to interact with the data. Some ideas I have for increased functionality include:
@@ -129,3 +96,74 @@ In future projects, I would like to add more ways for a user to interact with th
 - <ins>Filtering options</ins> like the ability to specify date or total amount ranges
 - <ins>More/varied visualizations</ins>, for instance showing change over time line charts to demonstrate how employee reimbursement spending has fluctuated historically.
 - <ins>Further analysis of spending</ins> using natural language processing (specifically of the   `description` column in the data set). This could lead to interesting insights and allow for more complex visualizations like spending by category or analysis of employee travel locations.
+
+
+## Updates/Bug Fixes
+
+### 05/2026: 
+I finally finished my pipeline to clean and add the historical data I'd gotten from FOIA requests to my site. Now, the site includes data from Jan. 1, 2009 - Present. You can see the pipeline [here](/cleaning_foia_data.ipynb).
+
+Much of the cleaning work was just understanding the quirks of the data and thinking through how best to make data from the FOIAs match current the data I was getting from my scraper.
+
+Some of the notable steps include:
+
+**Compacting Itemized Transactions:**
+The data I got from FOIA requests had an additional "Invoice Line Number" column. If I left it as-is, it would not work with my current total reimbursements calculation on the visualization (which simply counts the total rows after grouping by the department name).
+
+I decided to deal with this by grouping each invoice by its invoice number, payment date and description, then summing the total values and merging back in the other important columns.
+
+```python
+df_sums = df.groupby(['Voucher (Batch) Number', 'Pymt Date', 'Invoice Description'], as_index=False)['Invoice Line Amount'].sum()
+
+df_merged = pd.merge(df_sums,df[['Voucher (Batch) Number', 'Pymt Date', 'Invoice Description', 'Dept Code', 'Vendor Name', 'Vendor Number']],on=['Voucher (Batch) Number', 'Pymt Date', 'Invoice Description'], how='left')
+
+df_merged_dropped = df_merged.drop_duplicates(subset=['Voucher (Batch) Number', 'Invoice Line Amount', 'Pymt Date', 'Invoice Description'], keep='first')
+
+df_merged_dropped.head()
+```
+
+This approach did fail to solve the issue of reimbursements having the same Voucher Number but different invoice descriptions (I found about 1,500 occurrences of this). I'm still working through how to solve this problem, but, at present, it doesn't feel wholly inaccurate to me to describe separate invoice line items with separate descriptions as inherently different invoices (and thereby increase the total count of invoices by department beyond the count of unique voucher numbers).
+
+**`NA` in Invoice Descriptions**
+Some of my EDA on the FOIA data included checking that I hadn't lost any info when merging the [.xslx files](/foia_data/all/) together.
+
+The only column that still had NA values after the merge was the "Invoice Description" column, which had almost 10,000 rows with NA for the description.
+
+I found the most common dates for NA values in the description field and manually checked the xlsx sheets to see if the NAs existed in the original data or if they were a product of my wrangling. I found that they did exist in the data for the top 5 dates with NA values, and I suspect the same is true for many or all of the other Nas in the column.
+
+One of the [ideas](/future_ideas.md) I have is to create a chart summarizing data about NA values by department and/or over time. I am also interested in doing more reporting on why some invoices don't have descriptions included.
+
+### 04/2026: 
+I fixed the two below issues with the [scraping pipeline](/chicago_reimbursements_scraper.ipynb).
+
+**Dates not displaying chronologically due to being different formats** <br>
+Some of the dates in the dataset were in the format "MM/DD/YYYY" while others were in the format "Month DD, YYYY" *(eg. either 01/01/2026 or January 1, 2026)*. Because of this, DataWrapper would not display all the rows on the individual departments' pages chronologically; it would instead sort the MM/DD/YYYY chronologically first, then the Month DD, YYYY chronologically after them.
+
+I solved this by passing the newly merged dataframe's date column through a `pd.to_datetime` argument with the argument `format='mixed'`. This seemed to solve the issue and built in the solution in case the way dates are included in the records changes in the future.
+
+```python
+df_safe = pd.concat([df_orig, df_new], ignore_index=True)
+df_safe['payment_date'] = pd.to_datetime(df_safe['payment_date'], format='mixed')
+```
+
+**`Amount` column not being read as the same by `.drop_duplicates` when merging old and new datasets** <br>
+When a row that was in my original saved dataset and the new dataset (eg. if a reimbursement was uploaded 1 wk ago and I had already scraped, but it was also still in the online database) it would sometimes not disappear when the `.drop_duplicates` line ran.
+
+After some testing, I determined that the `Amount` column was the issue – instead of being a float type it was a string, and the duplicate search was reading them as different.
+
+I solved this by converting the new and old datasets to floats (including removing "$" and "," symbols). I have the conversion for the old dataset nested inside an if/else statement which only runs if the column is a type string (once I save the dataframe once with the characters as type float, it seems like Pandas is good about reading in the data as a float type again).
+
+```python
+df_new['amount'] = df_new['amount'].str.replace('$','')
+df_new['amount'] = df_new['amount'].str.replace(',','')
+df_new['amount'] = df_new['amount'].astype('float')
+```
+```python
+if df_orig['amount'].dtype == 'str':
+    df_orig['amount'] = df_orig['amount'].str.replace('$','')
+    df_orig['amount'] = df_orig['amount'].str.replace(',','')
+    df_orig['amount'] = df_orig['amount'].astype('float')
+```
+
+
+<br>
